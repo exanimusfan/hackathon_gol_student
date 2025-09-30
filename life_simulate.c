@@ -16,7 +16,6 @@ typedef struct
 
 #include <stdlib.h>
 
-
 typedef uint8_t   u8 ;
 typedef uint32_t  u32;
 
@@ -24,22 +23,22 @@ typedef uint32_t  u32;
 
 typedef struct
 {
-    u32  begin_x;
-    u32  begin_y;
-    u32  end_x;
-    u32  end_y;
-    u32  grid_size;
+    u32         begin_x;
+    u32         begin_y;
+    u32         end_x;
+    u32         end_y;
+    u32         grid_size;
     volatile u8 finished;
     volatile u8 new_work;
 } work_t;
 
 typedef struct
 {
-    HANDLE threads[THREAD_COUNT];
-    work_t work[THREAD_COUNT];
-    u8 *input;
-    u8 *staging;
-    u8 *output;
+    HANDLE  threads[THREAD_COUNT];
+    work_t  work[THREAD_COUNT];
+    u8     *input;
+    u8     *staging;
+    u8     *output;
 } state_t;
 
 state_t state = {0};
@@ -51,11 +50,12 @@ void work_thread(void *argument)
     while(1)
     {
         while (!work->new_work);
-        for (int i = work->begin_x; i < work->end_x; i++)
+        for (int i = work->begin_y; i < work->end_y; i++)
         {
-            for (int j = work->begin_y; j < work->end_y; j++)
+            for (int j = work->begin_x; j < work->end_x; j++)
             {
                 int neighbour_count = 0;
+
                 for (int y1 = i - 1; y1 <= i + 1; y1++)
                     for (int x1 = j - 1; x1 <= j + 1; x1++)
                         if (state.input[(x1 + work->grid_size) % work->grid_size + ((y1 + work->grid_size) % work->grid_size) * work->grid_size])
@@ -63,7 +63,7 @@ void work_thread(void *argument)
                 uint8_t current_state = state.input[j + i * work->grid_size];
                 if (current_state)
                     neighbour_count--;
-                state.staging[j + i * work->grid_size] = (neighbour_count == 3 || (neighbour_count == 2 && current_state));
+                state.staging[j + i * work->grid_size] = (neighbour_count == 3 || (neighbour_count == 2 & current_state));
             }
         }
         work->grid_size = 0;
